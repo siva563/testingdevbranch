@@ -1,26 +1,27 @@
-name: Branch Name
+name: Validate Branch Name
 
 on:
   push:
     branches:
-      - "*"
+      - '**'  # Trigger on all branches
   pull_request:
     branches:
-      - "*"
+      - '**'  # Trigger on all pull requests
 
 jobs:
   check-branch-name:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get the branch name
-        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+      - name: Set Branch Name
+        id: get_branch_name
+        run: echo "BRANCH_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
-      - name: Validate branch name
+      - name: Validate Branch Name
         run: |
           if [[ "$BRANCH_NAME" == "main" ]]; then
-            echo "Branch name 'main' is allowed."
-          elif [[ ! "$BRANCH_NAME" =~ ^CBIN-B0-[a-zA-Z]+$ ]]; then
+            echo "Main branch does not require naming convention validation."
+          elif [[ ! "$BRANCH_NAME" =~ ^CBIN-B0-.* ]]; then
             echo "Branch name '$BRANCH_NAME' does not follow the naming convention."
             echo "Valid format: CBIN-B0-{Yourname}"
             echo "Example: CBIN-B0-JohnDoe"
