@@ -1,7 +1,6 @@
-name: Check Branch Name
+name: Branch Name
 
 on:
-  # Trigger the workflow on push and pull requests
   push:
     branches:
       - "*"
@@ -14,29 +13,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Get the branch name
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
-      # Step 2: Get branch name
-      - name: Get Branch Name
-        id: get_branch
+      - name: Validate branch name
         run: |
-          echo "Branch ref: $GITHUB_REF"
-          BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}")
-          echo "Branch name: $BRANCH_NAME"
-          echo "::set-output name=branch_name::$BRANCH_NAME"
-
-      # Step 3: Validate branch name using regex
-      - name: Validate Branch Name
-        run: |
-          BRANCH_NAME=${{ steps.get_branch.outputs.branch_name }}
-          echo "Validating branch name: $BRANCH_NAME"
-          if [[ ! "$BRANCH_NAME" =~ ^CBIN-B0-[a-zA-Z]+$ ]]; then
+          if [[ "$BRANCH_NAME" == "main" ]]; then
+            echo "Branch name 'main' is allowed."
+          elif [[ ! "$BRANCH_NAME" =~ ^CBIN-B0-[a-zA-Z]+$ ]]; then
             echo "Branch name '$BRANCH_NAME' does not follow the naming convention."
             echo "Valid format: CBIN-B0-{Yourname}"
             echo "Example: CBIN-B0-JohnDoe"
             exit 1
           else
-            echo "Branch name '$BRANCH_NAME' follows the naming convention."
+            echo "Branch name '$BRANCH_NAME' is valid."
           fi
