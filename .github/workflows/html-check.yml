@@ -1,0 +1,47 @@
+name: Code Quality Check
+
+on:
+  push:
+    branches:
+      - '*'  # Trigger on push to any branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull request to main
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'  # Specify your desired Node.js version
+
+    - name: Install dependencies
+      run: |
+        npm install -g htmlhint stylelint eslint
+
+    - name: Validate HTML
+      run: |
+        htmlhint **/*.html > htmlhint-results.txt || echo "HTMLHint failed!" > htmlhint-results.txt
+
+    - name: Validate CSS
+      run: |
+        stylelint "**/*.css" > stylelint-results.txt || echo "Stylelint failed!" > stylelint-results.txt
+
+    - name: Validate JavaScript
+      run: |
+        eslint "**/*.js" > eslint-results.txt || echo "ESLint failed!" > eslint-results.txt
+
+    - name: Save results as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-quality-results
+        path: |
+          htmlhint-results.txt
+          stylelint-results.txt
+          eslint-results.txt
